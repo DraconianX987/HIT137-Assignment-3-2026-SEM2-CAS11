@@ -1,13 +1,4 @@
 class Transformation:
-    """
-    Abstract base class for a single scramble operation.
-
-    Inheritance/polymorphism: Puzzle.scramble() builds a list containing a
-    random mix of SwapTransformation, RotateTransformation and
-    FlipTransformation objects, then calls .apply(puzzle) on each one
-    without caring which subclass it actually is — each subclass provides
-    its own apply() that does something different.
-    """
 
     def apply(self, puzzle):
         raise NotImplementedError("Subclasses must implement apply()")
