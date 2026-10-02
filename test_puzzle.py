@@ -5,11 +5,12 @@ from puzzle import Puzzle
 
 
 def make_test_image(path):
-    """Makes a simple colourful test picture so we don't need a real photo."""
-    image = np.zeros((300, 300, 3), dtype=np.uint8)
+    """Makes a simple colourful test picture so we don't need a real photo.
+    It's a rectangle (like a normal photo), not a square."""
+    image = np.zeros((300, 400, 3), dtype=np.uint8)
     for row in range(300):
-        for col in range(300):
-            image[row, col] = [(row * 255) // 300, (col * 255) // 300, 128]
+        for col in range(400):
+            image[row, col] = [(row * 255) // 300, (col * 255) // 400, 128]
     cv2.imwrite(path, image)
 
 

@@ -8,14 +8,7 @@ from transformations import SwapTransformation, RotateTransformation, FlipTransf
 
 
 class Puzzle:
-    """
-    Holds the current arrangement of tiles and all the game logic:
-    loading/splitting an image, scrambling it, swapping/rotating/flipping
-    tiles, tracking moves, hints and win detection.
-
-    Class interaction: Puzzle creates and manages Tile objects, and builds
-    Transformation objects (polymorphically applied) when scrambling.
-    """
+    
 
     TRANSFORM_COUNTS = {3: 6, 4: 12, 5: 20}
     MAX_DISPLAY_SIZE = 600
@@ -46,7 +39,13 @@ class Puzzle:
         return self._solved
 
     def load_image(self, path):
-        image = cv2.imread(path)
+        # np.fromfile + imdecode also works for folders with special
+        # characters in their name, which cv2.imread can't open on Windows
+        try:
+            data = np.fromfile(path, dtype=np.uint8)
+        except OSError:
+            raise ValueError(f"Could not read image: {path}")
+        image = cv2.imdecode(data, cv2.IMREAD_COLOR)
         if image is None:
             raise ValueError(f"Could not read image: {path}")
 
@@ -71,12 +70,16 @@ class Puzzle:
         return cv2.resize(image, new_size, interpolation=cv2.INTER_AREA)
 
     def _crop_to_grid(self, image):
+        # Tiles must be square, otherwise a rotated tile would no longer
+        # fit back in its spot. So cut a square from the middle of the
+        # picture, sized so it divides evenly into the grid.
         height, width = image.shape[:2]
-        new_height = (height // self._grid_size) * self._grid_size
-        new_width = (width // self._grid_size) * self._grid_size
-        if new_height == 0 or new_width == 0:
+        side = (min(height, width) // self._grid_size) * self._grid_size
+        if side == 0:
             raise ValueError("Image is too small for this grid size")
-        return image[:new_height, :new_width]
+        top = (height - side) // 2
+        left = (width - side) // 2
+        return image[top:top + side, left:left + side]
 
     def _split_into_tiles(self, image):
         height, width = image.shape[:2]
@@ -99,6 +102,8 @@ class Puzzle:
         return self._tiles[self._index_of(position)]
 
     def swap_tiles(self, position1, position2, count_move=True):
+        if count_move and self._solved:
+            return
         i1 = self._index_of(position1)
         i2 = self._index_of(position2)
 
@@ -109,10 +114,14 @@ class Puzzle:
         self._after_move(count_move)
 
     def rotate_tile(self, position, count_move=True):
+        if count_move and self._solved:
+            return
         self.tile_at(position).rotate()
         self._after_move(count_move)
 
     def flip_tile(self, position, direction='horizontal', count_move=True):
+        if count_move and self._solved:
+            return
         self.tile_at(position).flip(direction)
         self._after_move(count_move)
 
@@ -124,10 +133,15 @@ class Puzzle:
 
     def scramble(self):
         count = self.TRANSFORM_COUNTS.get(self._grid_size, self._grid_size ** 2 * 2)
-        transformations = [self._random_transformation() for _ in range(count)]
 
-        for transformation in transformations:
-            transformation.apply(self)
+        # All transformations are made at once, then applied. In the rare
+        # case they cancel each other out, scramble again.
+        while True:
+            transformations = [self._random_transformation() for _ in range(count)]
+            for transformation in transformations:
+                transformation.apply(self)
+            if not all(tile.is_correct() for tile in self._tiles):
+                break
 
         self._moves = 0
         self._hints_used = 0
