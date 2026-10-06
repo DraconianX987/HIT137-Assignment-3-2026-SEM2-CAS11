@@ -1,6 +1,6 @@
 ﻿Loaded image into a 3x3 puzzle.
 Moves: 0
-Incorrect tiles: 5
+Incorrect tiles: 7
 Is it solved? False
 
 Swapping tile (0,0) with tile (1,1)...
@@ -13,13 +13,10 @@ Flipping tile (0,1)...
 Moves: 3
 
 Asking for a hint...
-Hint says: move the tile at (0, 1) back to (0, 1)
+Hint says: move the tile at (1, 0) back to (0, 2)
 Hints left: 2
 
 Solving the whole puzzle...
 Moves: 0
 Incorrect tiles: 0
 Is it solved? True
-
-Saving the reassembled picture as result.png so you can look at it.
-Done. If nothing crashed and 'Is it solved?' said True at the end, your part works.
