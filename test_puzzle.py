@@ -5,8 +5,7 @@ from puzzle import Puzzle
 
 
 def make_test_image(path):
-    """Makes a simple colourful test picture so we don't need a real photo.
-    It's a rectangle (like a normal photo), not a square."""
+   
     image = np.zeros((300, 400, 3), dtype=np.uint8)
     for row in range(300):
         for col in range(400):
@@ -52,12 +51,8 @@ def main():
     print("Moves:", puzzle.moves)
     print("Incorrect tiles:", puzzle.incorrect_count())
     print("Is it solved?", puzzle.is_solved)
-    print()
 
-    print("Saving the reassembled picture as result.png so you can look at it.")
     cv2.imwrite("result.png", puzzle.reassemble())
-
-    print("Done. If nothing crashed and 'Is it solved?' said True at the end, your part works.")
 
 
 if __name__ == '__main__':
